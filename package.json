@@ -1,0 +1,59 @@
+{
+    "name": "@ludeschersoftware/assetloader",
+    "version": "1.0.0",
+    "description": "A high-level asset management system powered by tracked promise pools. Designed for games and apps, it wraps assets (like textures, audio, data files) in tracked promises and manages them by key. Provides progress tracking, error handling, and easy access to results once assets are ready.",
+    "publishConfig": {
+        "access": "public"
+    },
+    "main": "index.js",
+    "scripts": {
+        "build": "tsc --project tsconfig.json",
+        "watch": "tsc --watch",
+        "test": "jest --passWithNoTests",
+        "test:watch": "jest --watch",
+        "test:coverage": "jest --coverage"
+    },
+    "types": "index.ts",
+    "exports": {
+        ".": {
+            "import": "./index.js",
+            "types": "./index.ts"
+        }
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ludeschersoftware/JAssetLoader.git"
+    },
+    "keywords": [
+        "assetloader"
+    ],
+    "author": "Johannes Ludescher",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/ludeschersoftware/JAssetLoader/issues"
+    },
+    "homepage": "https://github.com/ludeschersoftware/JAssetLoader#readme",
+    "dependencies": {
+        "@ludeschersoftware/promise": "^1.0.0"
+    },
+    "devDependencies": {
+        "@types/babel__core": "^7.20.5",
+        "@types/babel__generator": "^7.27.0",
+        "@types/babel__template": "^7.4.4",
+        "@types/babel__traverse": "^7.20.7",
+        "@types/istanbul-lib-coverage": "^2.0.6",
+        "@types/istanbul-lib-report": "^3.0.3",
+        "@types/istanbul-reports": "^3.0.4",
+        "@types/jest": "^30.0.0",
+        "@types/node": "^24.0.10",
+        "@types/stack-utils": "^2.0.3",
+        "@types/yargs": "^17.0.33",
+        "@types/yargs-parser": "^21.0.3",
+        "jest": "^30.0.4",
+        "jest-environment-jsdom": "^30.0.4",
+        "jsdom": "^26.1.0",
+        "ts-jest": "^29.4.0",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.2"
+    }
+}
