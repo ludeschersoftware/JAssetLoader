@@ -5,9 +5,11 @@ import JsonResource from "./JsonResource";
 class JsonLoader extends AbstractLoader<any> {
     protected async fetchResource(src: string): Promise<any> {
         const response = await fetch(src);
+
         if (!response.ok) {
-            throw new Error(`Failed to fetch JSON: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to fetch JSON: ${response.status}`);
         }
+
         return await response.json();
     }
 

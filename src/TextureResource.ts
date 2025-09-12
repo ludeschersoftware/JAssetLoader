@@ -1,9 +1,9 @@
 import AbstractResource from "./AbstractResource";
 
-class Texture2D extends AbstractResource<ImageBitmap> {
+class TextureResource extends AbstractResource<ImageBitmap> {
     constructor(id: string, src: string) {
         super(id, src);
     }
 }
 
-export default Texture2D;
+export default TextureResource;

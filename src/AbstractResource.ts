@@ -3,7 +3,7 @@ import BaseResourceInterface from "./BaseResourceInterface";
 abstract class AbstractResource<T> implements BaseResourceInterface<T> {
     public readonly Id: string;
     public readonly Src: string;
-    public Content?: T;
+    public Content: T | undefined;
 
     constructor(id: string, src: string) {
         this.Id = id;

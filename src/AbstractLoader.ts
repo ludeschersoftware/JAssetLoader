@@ -2,14 +2,14 @@ import Ref from "@ludeschersoftware/ref";
 import { CreateUniqHash, HashValue } from "@ludeschersoftware/utils";
 import ContentLoadType from "./ContentLoadType";
 
+/**
+ * Generic loader with caching + lazy/eager logic.
+ */
 abstract class AbstractLoader<TResource extends WeakKey> {
     private readonly cache = new Map<number, WeakRef<TResource>>();
     private readonly loadCounts = new Map<number, Ref<number>>();
 
-    public Load(src: string, type: ContentLoadType = ContentLoadType.Default): {
-        id: string;
-        promise: Promise<TResource>;
-    } {
+    public Load(src: string, type: ContentLoadType = ContentLoadType.Default): { id: string; promise: Promise<TResource>; } {
         const id = CreateUniqHash(50);
         const promise = this.loadInternal(src, type);
         return { id, promise };
@@ -20,14 +20,13 @@ abstract class AbstractLoader<TResource extends WeakKey> {
     private async loadInternal(src: string, type: ContentLoadType): Promise<TResource> {
         const srcHash = HashValue(src);
 
-        // ✅ cache check
+        // Check cache
         const cached = this.cache.get(srcHash)?.deref();
         if (cached) return cached;
 
-        // ✅ fetch resource
         const resource = await this.fetchResource(src);
 
-        // ✅ cache policy
+        // Cache policy
         if (type === ContentLoadType.Cache) {
             this.cache.set(srcHash, new WeakRef(resource));
         } else {

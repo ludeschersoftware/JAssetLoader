@@ -13,14 +13,14 @@ class AudioLoader extends AbstractLoader<AudioBuffer> {
 
     public LoadAudio(src: string, type: ContentLoadType) {
         const { id, promise } = this.Load(src, type);
-        const audioRes = new AudioResource(id, src);
+        const resource = new AudioResource(id, src);
 
         const wrappedPromise = promise.then(buffer => {
-            audioRes.ContentLoaded(buffer);
-            return audioRes;
+            resource.ContentLoaded(buffer);
+            return resource;
         });
 
-        return { id, resource: audioRes, promise: wrappedPromise };
+        return { id, resource, promise: wrappedPromise };
     }
 }
 
