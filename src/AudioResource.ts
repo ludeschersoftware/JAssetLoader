@@ -1,9 +1,9 @@
 import AbstractResource from "./AbstractResource";
 
-class Texture2D extends AbstractResource<ImageBitmap> {
+class AudioResource extends AbstractResource<AudioBuffer> {
     constructor(id: string, src: string) {
         super(id, src);
     }
 }
 
-export default Texture2D;
+export default AudioResource;

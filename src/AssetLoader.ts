@@ -1,62 +1,84 @@
 import { PromiseStatus, TrackedPromise, TrackedPromisePool } from "@ludeschersoftware/promise";
 import ProgressInterface from "./ProgressInterface";
 import TextureLoader from "./TextureLoader";
+import AudioLoader from "./AudioLoader";
 import ContentLoadType from "./ContentLoadType";
+import BaseResourceInterface from "./BaseResourceInterface";
+import JsonLoader from "./JsonLoader";
 
 class AssetLoader {
-    private readonly m_pool: TrackedPromisePool;
-    private readonly m_tasks: Map<string, TrackedPromise<any>>;
+    private readonly pool: TrackedPromisePool;
+    private readonly tasks: Map<string, { tracked: TrackedPromise<any>, resource?: BaseResourceInterface<any>; }>;
 
-    public constructor() {
-        this.m_pool = new TrackedPromisePool();
-        this.m_tasks = new Map();
+    constructor() {
+        this.pool = new TrackedPromisePool();
+        this.tasks = new Map();
     }
 
-    public Load<T>(key: string, promise: Promise<T>): void {
-        this.m_tasks.set(key, this.m_pool.Add(promise));
+    // 🔹 generic load
+    public Load<T>(key: string, promise: Promise<T>, resource?: BaseResourceInterface<T>): void {
+        const tracked = this.pool.Add(promise);
+        this.tasks.set(key, { tracked, resource });
     }
 
-    public LoadTexture(src: string, type: ContentLoadType): Texture2D {
-        const { id, texture, promise } = TextureLoader.Load(src, type);
-
-        this.Load(id, promise);
-
-        return texture;
+    // 🔹 texture-specific load
+    public LoadTexture(src: string, type: ContentLoadType) {
+        const { id, resource, promise } = TextureLoader.LoadTexture(src, type);
+        this.Load(id, promise, resource);
+        return resource;
     }
 
+    // 🔹 audio-specific load
+    public LoadAudio(src: string, type: ContentLoadType) {
+        const { id, resource, promise } = AudioLoader.LoadAudio(src, type);
+        this.Load(id, promise, resource);
+        return resource;
+    }
+
+    public LoadJson<T = any>(src: string, type: ContentLoadType) {
+        const { id, resource, promise } = JsonLoader.LoadJson<T>(src, type);
+        this.Load(id, promise, resource);
+        return resource;
+    }
+
+    // 🔹 progress tracking
     public GetProgress(): ProgressInterface {
-        let loaded: number = 0;
-        let failed: number = 0;
+        let loaded = 0;
+        let failed = 0;
 
-        for (const task of this.m_tasks.values()) {
-            if (task.Status === PromiseStatus.Fulfilled) {
-                loaded++;
-            } else if (task.Status === PromiseStatus.Rejected) {
-                failed++;
-            }
+        for (const { tracked } of this.tasks.values()) {
+            if (tracked.Status === PromiseStatus.Fulfilled) loaded++;
+            else if (tracked.Status === PromiseStatus.Rejected) failed++;
         }
 
-        return { loaded, failed, total: this.m_tasks.size };
+        return { loaded, failed, total: this.tasks.size };
     }
 
+    // 🔹 get raw result (decoded AudioBuffer, ImageBitmap, etc.)
     public GetResult<T>(key: string): T | undefined {
-        const TASK: TrackedPromise<any> | undefined = this.m_tasks.get(key);
-
-        return TASK?.Status === PromiseStatus.Fulfilled ? TASK.Result : undefined;
+        const task = this.tasks.get(key);
+        return task?.tracked.Status === PromiseStatus.Fulfilled ? task.tracked.Result : undefined;
     }
 
+    // 🔹 get resource object (Texture2D, AudioResource, etc.)
+    public GetResource<T extends BaseResourceInterface<any>>(key: string): T | undefined {
+        return this.tasks.get(key)?.resource as T | undefined;
+    }
+
+    // 🔹 get error
     public GetError(key: string): any {
-        const TASK: TrackedPromise<any> | undefined = this.m_tasks.get(key);
-
-        return TASK?.Status === PromiseStatus.Rejected ? TASK.Error : undefined;
+        const task = this.tasks.get(key);
+        return task?.tracked.Status === PromiseStatus.Rejected ? task.tracked.Error : undefined;
     }
 
+    // 🔹 check readiness
     public IsReady(): boolean {
-        return this.m_pool.Resolved;
+        return this.pool.Resolved;
     }
 
+    // 🔹 clear tasks
     public Clear(): void {
-        this.m_tasks.clear();
+        this.tasks.clear();
     }
 }
 
