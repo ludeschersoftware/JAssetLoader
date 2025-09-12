@@ -1,4 +1,4 @@
-import AbstractResource from "./AbstractResource";
+import AbstractResource from "../Abstracts/AbstractResource";
 
 class JsonResource<T = any> extends AbstractResource<T> {
     constructor(id: string, src: string) {

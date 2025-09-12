@@ -1,6 +1,6 @@
-import AbstractLoader from "./AbstractLoader";
-import ContentLoadType from "./ContentLoadType";
-import JsonResource from "./JsonResource";
+import AbstractLoader from "../Abstracts/AbstractLoader";
+import ContentLoadType from "../Enums/ContentLoadType";
+import JsonResource from "../Resources/JsonResource";
 
 class JsonLoader extends AbstractLoader<any> {
     protected async fetchResource(src: string): Promise<any> {

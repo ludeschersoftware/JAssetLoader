@@ -1,4 +1,4 @@
-import AbstractResource from "./AbstractResource";
+import AbstractResource from "../Abstracts/AbstractResource";
 
 class TextureResource extends AbstractResource<ImageBitmap> {
     constructor(id: string, src: string) {

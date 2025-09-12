@@ -1,6 +1,6 @@
-import AbstractLoader from "./AbstractLoader";
-import ContentLoadType from "./ContentLoadType";
-import TextureResource from "./TextureResource";
+import AbstractLoader from "../Abstracts/AbstractLoader";
+import ContentLoadType from "../Enums/ContentLoadType";
+import TextureResource from "../Resources/TextureResource";
 
 class TextureLoader extends AbstractLoader<ImageBitmap> {
     protected async fetchResource(src: string): Promise<ImageBitmap> {

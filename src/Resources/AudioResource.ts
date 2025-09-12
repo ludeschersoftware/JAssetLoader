@@ -1,4 +1,4 @@
-import AbstractResource from "./AbstractResource";
+import AbstractResource from "../Abstracts/AbstractResource";
 
 class AudioResource extends AbstractResource<AudioBuffer> {
     constructor(id: string, src: string) {

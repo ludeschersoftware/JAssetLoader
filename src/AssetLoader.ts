@@ -1,11 +1,11 @@
 import { PromiseStatus, TrackedPromisePool } from "@ludeschersoftware/promise";
-import ProgressInterface from "./ProgressInterface";
-import TextureLoader from "./TextureLoader";
-import AudioLoader from "./AudioLoader";
-import JsonLoader from "./JsonLoader";
-import AssetEntryInterface from "./AssetEntryInterface";
-import AbstractResource from "./AbstractResource";
-import ContentLoadType from "./ContentLoadType";
+import AssetEntryInterface from "./Interfaces/AssetEntryInterface";
+import AbstractResource from "./Abstracts/AbstractResource";
+import ContentLoadType from "./Enums/ContentLoadType";
+import TextureLoader from "./Loaders/TextureLoader";
+import AudioLoader from "./Loaders/AudioLoader";
+import JsonLoader from "./Loaders/JsonLoader";
+import ProgressInterface from "./Interfaces/ProgressInterface";
 
 class AssetLoader {
     private readonly pool: TrackedPromisePool;

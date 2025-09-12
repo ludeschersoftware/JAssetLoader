@@ -1,6 +1,6 @@
 import Ref from "@ludeschersoftware/ref";
 import { CreateUniqHash, HashValue } from "@ludeschersoftware/utils";
-import ContentLoadType from "./ContentLoadType";
+import ContentLoadType from "../Enums/ContentLoadType";
 
 /**
  * Generic loader with caching + lazy/eager logic.

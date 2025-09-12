@@ -1,6 +1,6 @@
-import AbstractLoader from "./AbstractLoader";
-import AudioResource from "./AudioResource";
-import ContentLoadType from "./ContentLoadType";
+import AbstractLoader from "../Abstracts/AbstractLoader";
+import ContentLoadType from "../Enums/ContentLoadType";
+import AudioResource from "../Resources/AudioResource";
 
 class AudioLoader extends AbstractLoader<AudioBuffer> {
     private static CONTEXT = new AudioContext();
