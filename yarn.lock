@@ -641,10 +641,33 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@ludeschersoftware/math@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@ludeschersoftware/math/-/math-1.0.0.tgz#8585b7c291b2af04b02f272e1f43d091784465ea"
+  integrity sha512-iYXy+LGHhJTD6xT9LUUejFocujD2k2pwT1VM9C60nfxSkcZbg2GefhmZHSRDpEGQlRfyDV3exLXSvFN/37f4BA==
+
 "@ludeschersoftware/promise@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@ludeschersoftware/promise/-/promise-1.0.0.tgz#4ea08c35b5ac1d14fc62113c4b13ce681174a188"
   integrity sha512-1o7Q9vJs3wLUHK2zwccKYV/0MLaZNFk8XfUg465L8jAvdLexa3gb1IAvlQHzNqtIeUq3EuHXaI3mAZn6+yhXxg==
+
+"@ludeschersoftware/ref@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@ludeschersoftware/ref/-/ref-1.0.0.tgz#5f20e9fe83a859798f4eb4b96719b77f435fd43d"
+  integrity sha512-2J/aREHAbBvzGziB66pk3E1Y8wsxkQk13KQ52i2OxZDspks2zcjlMUrE2GgTBGUMocuATWoUKiu4k7J13nWwUA==
+
+"@ludeschersoftware/result@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@ludeschersoftware/result/-/result-1.0.0.tgz#0b2ca78c891790b60d227d4a5ab17ef037b75473"
+  integrity sha512-Ffq4oHl0dlBC6R1QCwBeC/2nFKJa66n96zq8clz5M0avuGzv8AXd7LVUbs2zFKHEgwHr/MKKuT63+yPLGrj2Kw==
+
+"@ludeschersoftware/utils@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@ludeschersoftware/utils/-/utils-1.2.2.tgz#974ce7958f95c525fd4855fe902633b2c306804d"
+  integrity sha512-iAHbjzRhZ031t6+D+ej1UXhT7GO9gQ5f504HULV2bAxxK4c7fu8yEt8ZFDhEuOizjnoluRNfp39NP/zae2J2Yw==
+  dependencies:
+    "@ludeschersoftware/math" "^1.0.0"
+    "@ludeschersoftware/result" "^1.0.0"
 
 "@napi-rs/wasm-runtime@^0.2.11":
   version "0.2.12"

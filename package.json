@@ -34,7 +34,9 @@
     },
     "homepage": "https://github.com/ludeschersoftware/JAssetLoader#readme",
     "dependencies": {
-        "@ludeschersoftware/promise": "^1.0.0"
+        "@ludeschersoftware/promise": "^1.0.0",
+        "@ludeschersoftware/ref": "^1.0.0",
+        "@ludeschersoftware/utils": "^1.2.2"
     },
     "devDependencies": {
         "@types/babel__core": "^7.20.5",
