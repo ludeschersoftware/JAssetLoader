@@ -34,11 +34,14 @@
     },
     "homepage": "https://github.com/ludeschersoftware/JAssetLoader#readme",
     "dependencies": {
+        "@ludeschersoftware/math": "^1.0.0",
         "@ludeschersoftware/promise": "^1.0.0",
         "@ludeschersoftware/ref": "^1.0.0",
+        "@ludeschersoftware/result": "^1.0.0",
         "@ludeschersoftware/utils": "^1.2.2"
     },
     "devDependencies": {
+        "@ludeschersoftware/types": "^1.3.0",
         "@types/babel__core": "^7.20.5",
         "@types/babel__generator": "^7.27.0",
         "@types/babel__template": "^7.4.4",

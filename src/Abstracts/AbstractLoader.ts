@@ -22,32 +22,33 @@ abstract class AbstractLoader<TResource extends WeakKey> {
     protected abstract fetchResource(src: string): Promise<TResource>;
 
     private async loadInternal(src: string, type?: ContentLoadType): Promise<TResource> {
-        if (!type) {
-            type = ContentLoadType.Default;
-        }
-
         const SRC_HASH: number = HashValue(src);
-        const CACHED: TResource | undefined = this.m_cache.get(SRC_HASH)?.deref();
+        const CACHE_HIT: WeakRef<TResource> | undefined = this.m_cache.get(SRC_HASH);
+        const CACHED: TResource | undefined = CACHE_HIT?.deref();
 
         if (CACHED) {
             return CACHED;
+        } else if (CACHE_HIT) { // WeakRef got GC'ed
+            this.m_cache.delete(SRC_HASH);
         }
 
         const RESOURCE: Awaited<TResource> = await this.fetchResource(src);
 
         if (type === ContentLoadType.Cache) {
             this.m_cache.set(SRC_HASH, new WeakRef(RESOURCE));
-        } else {
-            const REF: Ref<number> = this.m_load_counts.get(SRC_HASH) ?? new Ref(0);
 
-            REF.value++;
+            return RESOURCE;
+        }
 
-            this.m_load_counts.set(SRC_HASH, REF);
+        const REF: Ref<number> = this.m_load_counts.get(SRC_HASH) ?? new Ref(0);
 
-            if (REF.value >= 5) {
-                this.m_cache.set(SRC_HASH, new WeakRef(RESOURCE));
-                this.m_load_counts.delete(SRC_HASH);
-            }
+        REF.value++;
+
+        this.m_load_counts.set(SRC_HASH, REF);
+
+        if (REF.value >= 5) { // Check if the resource got loaded multiple times => cache anyway!
+            this.m_cache.set(SRC_HASH, new WeakRef(RESOURCE));
+            this.m_load_counts.delete(SRC_HASH);
         }
 
         return RESOURCE;

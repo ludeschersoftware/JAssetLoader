@@ -1,6 +1,5 @@
 enum ContentLoadType {
     Default,
-    Lazy,
     Cache,
 }
 

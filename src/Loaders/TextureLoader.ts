@@ -13,7 +13,7 @@ class TextureLoader extends AbstractLoader<ImageBitmap> {
         });
     }
 
-    public LoadTexture(src: string, type: ContentLoadType): LoaderLoadResultType<TextureResource> {
+    public LoadTexture(src: string, type?: ContentLoadType): LoaderLoadResultType<TextureResource> {
         const { id, promise } = this.Load(src, type);
         const WRAPPED_PROMISE: Promise<TextureResource> = promise.then(bitmap => {
             return new TextureResource(id, src, bitmap);

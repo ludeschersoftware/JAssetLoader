@@ -14,7 +14,7 @@ class JsonLoader extends AbstractLoader<any> {
         return await RESPONSE.json();
     }
 
-    public LoadJson<T = any>(src: string, type: ContentLoadType): LoaderLoadResultType<JsonResource<T>> {
+    public LoadJson<T = any>(src: string, type?: ContentLoadType): LoaderLoadResultType<JsonResource<T>> {
         const { id, promise } = this.Load(src, type);
         const WRAPPED_PROMISE: Promise<JsonResource<T>> = promise.then(json => {
             return new JsonResource<T>(id, src, json as T);

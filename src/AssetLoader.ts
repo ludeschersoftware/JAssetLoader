@@ -10,7 +10,7 @@ class AssetLoader {
     private readonly m_pool: TrackedPromisePool;
     private readonly m_tasks: Map<string, TrackedPromise<any>>;
 
-    constructor() {
+    public constructor() {
         this.m_pool = new TrackedPromisePool();
         this.m_tasks = new Map();
     }
@@ -21,15 +21,15 @@ class AssetLoader {
         return id;
     }
 
-    public LoadTexture(src: string, type: ContentLoadType) {
+    public LoadTexture(src: string, type?: ContentLoadType): string {
         return this.Load(...TextureLoader.LoadTexture(src, type));
     }
 
-    public LoadAudio(src: string, type: ContentLoadType) {
+    public LoadAudio(src: string, type?: ContentLoadType): string {
         return this.Load(...AudioLoader.LoadAudio(src, type));
     }
 
-    public LoadJson<T = any>(src: string, type: ContentLoadType) {
+    public LoadJson<T = any>(src: string, type?: ContentLoadType): string {
         return this.Load(...JsonLoader.LoadJson<T>(src, type));
     }
 
