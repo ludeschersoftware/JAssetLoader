@@ -1,16 +1,11 @@
-import BaseResourceInterface from "../Interfaces/BaseResourceInterface";
-
-abstract class AbstractResource<T> implements BaseResourceInterface<T> {
+abstract class AbstractResource<T> {
     public readonly Id: string;
     public readonly Src: string;
-    public Content: T | undefined;
+    public readonly Content: T;
 
-    constructor(id: string, src: string) {
+    constructor(id: string, src: string, content: T) {
         this.Id = id;
         this.Src = src;
-    }
-
-    public ContentLoaded(content: T): void {
         this.Content = content;
     }
 }

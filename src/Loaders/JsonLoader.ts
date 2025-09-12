@@ -1,28 +1,26 @@
 import AbstractLoader from "../Abstracts/AbstractLoader";
 import ContentLoadType from "../Enums/ContentLoadType";
 import JsonResource from "../Resources/JsonResource";
+import LoaderLoadResultType from "../Types/LoaderLoadResultType";
 
 class JsonLoader extends AbstractLoader<any> {
     protected async fetchResource(src: string): Promise<any> {
-        const response = await fetch(src);
+        const RESPONSE: Response = await fetch(src);
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch JSON: ${response.status}`);
+        if (!RESPONSE.ok) {
+            throw new Error(`Failed to fetch JSON: ${RESPONSE.status}`);
         }
 
-        return await response.json();
+        return await RESPONSE.json();
     }
 
-    public LoadJson<T = any>(src: string, type: ContentLoadType) {
+    public LoadJson<T = any>(src: string, type: ContentLoadType): LoaderLoadResultType<JsonResource<T>> {
         const { id, promise } = this.Load(src, type);
-        const resource = new JsonResource<T>(id, src);
-
-        const wrappedPromise = promise.then(json => {
-            resource.ContentLoaded(json as T);
-            return resource;
+        const WRAPPED_PROMISE: Promise<JsonResource<T>> = promise.then(json => {
+            return new JsonResource<T>(id, src, json as T);
         });
 
-        return { id, resource, promise: wrappedPromise };
+        return [id, WRAPPED_PROMISE];
     }
 }
 

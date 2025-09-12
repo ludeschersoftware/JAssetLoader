@@ -1,5 +1,4 @@
-import { PromiseStatus, TrackedPromisePool } from "@ludeschersoftware/promise";
-import AssetEntryInterface from "./Interfaces/AssetEntryInterface";
+import { PromiseStatus, TrackedPromise, TrackedPromisePool } from "@ludeschersoftware/promise";
 import AbstractResource from "./Abstracts/AbstractResource";
 import ContentLoadType from "./Enums/ContentLoadType";
 import TextureLoader from "./Loaders/TextureLoader";
@@ -8,83 +7,77 @@ import JsonLoader from "./Loaders/JsonLoader";
 import ProgressInterface from "./Interfaces/ProgressInterface";
 
 class AssetLoader {
-    private readonly pool: TrackedPromisePool;
-    private readonly tasks: Map<string, AssetEntryInterface<any, any>>;
+    private readonly m_pool: TrackedPromisePool;
+    private readonly m_tasks: Map<string, TrackedPromise<any>>;
 
     constructor() {
-        this.pool = new TrackedPromisePool();
-        this.tasks = new Map();
+        this.m_pool = new TrackedPromisePool();
+        this.m_tasks = new Map();
     }
 
-    public Load<TResource extends AbstractResource<TContent>, TContent>(
-        id: string,
-        promise: Promise<TContent>,
-        resource: TResource
-    ): void {
-        const tracked = this.pool.Add(promise);
-        this.tasks.set(id, { tracked, resource } as AssetEntryInterface<TResource, TContent>);
+    public Load<TContent>(id: string, promise: Promise<TContent>): string {
+        this.m_tasks.set(id, this.m_pool.Add(promise));
+
+        return id;
     }
 
     public LoadTexture(src: string, type: ContentLoadType) {
-        const { id, resource, promise } = TextureLoader.LoadTexture(src, type);
-        this.Load(id, promise, resource);
-        return resource;
+        return this.Load(...TextureLoader.LoadTexture(src, type));
     }
 
     public LoadAudio(src: string, type: ContentLoadType) {
-        const { id, resource, promise } = AudioLoader.LoadAudio(src, type);
-        this.Load(id, promise, resource);
-        return resource;
+        return this.Load(...AudioLoader.LoadAudio(src, type));
     }
 
     public LoadJson<T = any>(src: string, type: ContentLoadType) {
-        const { id, resource, promise } = JsonLoader.LoadJson<T>(src, type);
-        this.Load(id, promise, resource);
-        return resource;
+        return this.Load(...JsonLoader.LoadJson<T>(src, type));
     }
 
     public GetProgress(): ProgressInterface {
-        let loaded = 0;
-        let failed = 0;
+        let loaded: number = 0;
+        let failed: number = 0;
 
-        for (const { tracked } of this.tasks.values()) {
-            if (tracked.Status === PromiseStatus.Fulfilled) loaded++;
-            else if (tracked.Status === PromiseStatus.Rejected) failed++;
+        for (const tracked of this.m_tasks.values()) {
+            if (tracked.Status === PromiseStatus.Fulfilled) {
+                loaded++;
+            } else if (tracked.Status === PromiseStatus.Rejected) {
+                failed++;
+            }
         }
 
-        return { loaded, failed, total: this.tasks.size };
+        return { loaded, failed, total: this.m_tasks.size };
     }
 
     public GetResult<TContent>(id: string): TContent | undefined {
-        const entry = this.tasks.get(id);
-        return entry?.tracked.Status === PromiseStatus.Fulfilled ? entry.tracked.Result : undefined;
+        const TRACKED: TrackedPromise<TContent> | undefined = this.m_tasks.get(id);
+        return TRACKED?.Status === PromiseStatus.Fulfilled ? TRACKED.Result : undefined;
     }
 
     public GetResource<TResource extends AbstractResource<any>>(id: string): TResource | undefined {
-        return this.tasks.get(id)?.resource as TResource | undefined;
+        return this.m_tasks.get(id) as TResource | undefined;
     }
 
     public GetError(id: string): any {
-        const entry = this.tasks.get(id);
-        return entry?.tracked.Status === PromiseStatus.Rejected ? entry.tracked.Error : undefined;
+        const TRACKED: TrackedPromise<any> | undefined = this.m_tasks.get(id);
+        return TRACKED?.Status === PromiseStatus.Rejected ? TRACKED.Error : undefined;
     }
 
     public GetAllResources(): AbstractResource<any>[] {
-        return Array.from(this.tasks.values()).map(entry => entry.resource);
+        return Array.from(this.m_tasks.values()).map(entry => entry.Result);
     }
 
     public GetLoadedResources(): AbstractResource<any>[] {
-        return Array.from(this.tasks.values())
-            .filter(entry => entry.tracked.Status === PromiseStatus.Fulfilled)
-            .map(entry => entry.resource);
+        return Array.from(this.m_tasks.values())
+            .filter(tracked => tracked.Status === PromiseStatus.Fulfilled)
+            .map(entry => entry.Result);
     }
 
     public IsReady(): boolean {
-        return this.pool.Resolved;
+        return this.m_pool.Resolved;
     }
 
     public Clear(): void {
-        this.tasks.clear();
+        this.m_tasks.clear();
     }
 }
 
