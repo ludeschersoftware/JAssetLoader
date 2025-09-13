@@ -53,8 +53,8 @@ class AssetLoader {
         return TRACKED?.Status === PromiseStatus.Fulfilled ? TRACKED.Result : undefined;
     }
 
-    public GetResource<TResource extends AbstractResource<any>>(id: string): TResource | undefined {
-        return this.m_tasks.get(id) as TResource | undefined;
+    public GetResource(id: string): AbstractResource<any> | undefined {
+        return this.m_tasks.get(id)?.Result;
     }
 
     public GetError(id: string): any {
@@ -62,8 +62,15 @@ class AssetLoader {
         return TRACKED?.Status === PromiseStatus.Rejected ? TRACKED.Error : undefined;
     }
 
+    public GetErrors(): any {
+        return Array.from(this.m_tasks.values())
+            .filter(tracked => tracked.Status === PromiseStatus.Rejected ? tracked.Error : undefined);
+    }
+
     public GetAllResources(): AbstractResource<any>[] {
-        return Array.from(this.m_tasks.values()).map(entry => entry.Result);
+        return Array.from(this.m_tasks.values())
+            .map(entry => entry.Result)
+            .filter(result => (result !== null && result !== undefined));
     }
 
     public GetLoadedResources(): AbstractResource<any>[] {

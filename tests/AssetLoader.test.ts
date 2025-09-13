@@ -90,7 +90,7 @@ describe("AssetLoader", () => {
     test("GetResource returns tracked resource", async () => {
         const id = loader.LoadJson("config.json");
         await Promise.allSettled([loader.GetResult(id)]);
-        const resource = loader.GetResource<JsonResource<any>>(id);
+        const resource = loader.GetResource(id);
         expect(resource).toBeDefined();
     });
 

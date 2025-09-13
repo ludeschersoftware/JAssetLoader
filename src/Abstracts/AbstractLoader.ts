@@ -2,13 +2,17 @@ import Ref from "@ludeschersoftware/ref";
 import { CreateUniqHash, HashValue } from "@ludeschersoftware/utils";
 import ContentLoadType from "../Enums/ContentLoadType";
 import LoaderLoadResultInterface from "../Interfaces/LoaderLoadResultInterface";
+import AbstractResource from "./AbstractResource";
+import { retry } from "../Utils/RetryHelper";
 
-abstract class AbstractLoader<TResource extends WeakKey> {
+abstract class AbstractLoader<TResource extends AbstractResource<any>> {
     private readonly m_cache: Map<number, WeakRef<TResource>>;
+    private readonly m_strong_cache: Map<number, TResource>;
     private readonly m_load_counts: Map<number, Ref<number>>;
 
     public constructor() {
         this.m_cache = new Map();
+        this.m_strong_cache = new Map();
         this.m_load_counts = new Map();
     }
 
@@ -23,16 +27,30 @@ abstract class AbstractLoader<TResource extends WeakKey> {
 
     private async loadInternal(src: string, type?: ContentLoadType): Promise<TResource> {
         const SRC_HASH: number = HashValue(src);
+
+        // Strong cache first
+        const STRONG_CACHE_HIT: TResource | undefined = this.m_strong_cache.get(SRC_HASH);
+
+        if (STRONG_CACHE_HIT) {
+            return STRONG_CACHE_HIT;
+        }
+
+        // Weak cache next
         const CACHE_HIT: WeakRef<TResource> | undefined = this.m_cache.get(SRC_HASH);
         const CACHED: TResource | undefined = CACHE_HIT?.deref();
 
         if (CACHED) {
             return CACHED;
-        } else if (CACHE_HIT) { // WeakRef got GC'ed
+        } else if (CACHE_HIT) { // cleaned by GC
             this.m_cache.delete(SRC_HASH);
         }
 
-        const RESOURCE: Awaited<TResource> = await this.fetchResource(src);
+        // Fetch with retry & exponential backoff
+        const RESOURCE: TResource = await retry(
+            () => this.fetchResource(src),
+            3,   // max retries
+            300  // base delay
+        );
 
         if (type === ContentLoadType.Cache) {
             this.m_cache.set(SRC_HASH, new WeakRef(RESOURCE));
@@ -46,9 +64,10 @@ abstract class AbstractLoader<TResource extends WeakKey> {
 
         this.m_load_counts.set(SRC_HASH, REF);
 
-        if (REF.value >= 5) { // Check if the resource got loaded multiple times => cache anyway!
+        if (REF.value >= 4) { // Check if the resource got loaded multiple times => strong cache anyway!
+            this.m_strong_cache.set(SRC_HASH, RESOURCE);
+        } else if (REF.value >= 2) { // Check if the resource got loaded multiple times => "weak" cache anyway!
             this.m_cache.set(SRC_HASH, new WeakRef(RESOURCE));
-            this.m_load_counts.delete(SRC_HASH);
         }
 
         return RESOURCE;

@@ -1,14 +1,23 @@
-A modular and extensible asset loading system for web applications.  
-Supports **textures, audio, JSON, and custom resources**, with caching, progress tracking, and error handling.
+A flexible, promise-tracked asset loading and caching system for web applications.  
+Supports **textures**, **audio**, and **JSON** resources out of the box, with extensibility for custom resource types.
 
 ---
 
 ## ✨ Features
-- 🔄 **Unified API** – Load textures, audio, and JSON via a single interface.
-- 📦 **Caching with WeakRefs** – Prevents memory leaks while retaining frequently used assets.
-- 📊 **Progress Tracking** – Monitor loading status (`loaded`, `failed`, `total`).
-- 🛠️ **Error Handling** – Retrieve specific errors for failed assets.
-- ⚡ **Extensible** – Create custom loaders by extending `AbstractLoader`.
+
+- **Centralized Asset Management** via `AssetLoader`
+- **Promise Tracking** with progress monitoring (`loaded`, `failed`, `total`)
+- **Automatic Caching**
+  - **Weak cache** (GC-friendly, 2+ loads)
+  - **Strong cache** (persistent, 4+ loads)
+  - Explicit `Cache` mode via `ContentLoadType`
+- **Resource Wrappers**
+  - `TextureResource` (`ImageBitmap`)
+  - `AudioResource` (`AudioBuffer`)
+  - `JsonResource<T>` (parsed JSON data)
+- **Error Handling** with retrieval via `GetError(id)`
+- **Progress & Ready Checks**
+- **Memory-Safe Clear** (`Clear()` releases references)
 
 ---
 
@@ -28,106 +37,106 @@ Dependencies:
 
 ## 🚀 Usage
 
-### Loading Assets
+### Initialize
 
 ```ts
-import AssetLoader from "@ludeschersoftware/assetloader";
-import ContentLoadType from "@ludeschersoftware/assetloader/Enums/ContentLoadType";
+import AssetLoader from "@ludeschersoftware/asset-loader";
 
 const loader = new AssetLoader();
-
-// Load texture
-const textureId = loader.LoadTexture("/assets/sprite.png", ContentLoadType.Cache);
-
-// Load audio
-const audioId = loader.LoadAudio("/assets/sound.ogg");
-
-// Load JSON
-const jsonId = loader.LoadJson("/assets/config.json");
 ```
 
----
-
-### Tracking Progress
+### Load Assets
 
 ```ts
-const progress = loader.GetProgress();
-console.log(progress); 
-// { loaded: 2, failed: 0, total: 3 }
+// Texture
+const texId = loader.LoadTexture("/assets/sprites/hero.png");
+
+// Audio
+const sndId = loader.LoadAudio("/assets/sounds/jump.wav");
+
+// JSON
+const jsonId = loader.LoadJson("/assets/config/settings.json");
 ```
 
----
-
-### Accessing Results
+### Track Progress
 
 ```ts
-const texture = loader.GetResult(textureId);  // TextureResource | undefined
-const audio = loader.GetResult(audioId);      // AudioResource | undefined
-const config = loader.GetResult(jsonId);      // JsonResource<any> | undefined
+const { loaded, failed, total } = loader.GetProgress();
+console.log(`Progress: ${loaded}/${total}, Failed: ${failed}`);
 ```
 
----
-
-### Error Handling
+### Retrieve Results
 
 ```ts
-const error = loader.GetError(audioId);
-if (error) {
-  console.error("Audio failed:", error);
-}
+const texture = loader.GetResource(texId);  // TextureResource
+const sound   = loader.GetResource(sndId);  // AudioResource
+const config  = loader.GetResource(jsonId); // JsonResource<any>
 ```
 
----
-
-### Resource Queries
+### Handle Errors
 
 ```ts
-const allResources = loader.GetAllResources();       // All results (may include undefined)
-const loadedResources = loader.GetLoadedResources(); // Only successfully loaded resources
-
-if (loader.IsReady()) {
-  console.log("All tasks resolved!");
-}
+const error = loader.GetError(jsonId);
+if (error) console.error("Failed to load JSON:", error);
 ```
 
----
-
-### Clearing
+### Clear Resources
 
 ```ts
-loader.Clear(); // Removes tracked tasks
+loader.Clear(); // drops references for GC
 ```
 
 ---
 
-## 🛠️ Creating a Custom Loader
+## ⚙️ API Reference
 
-```ts
-import AbstractLoader from "@ludeschersoftware/assetloader/Abstracts/AbstractLoader";
+### **AssetLoader**
 
-class TextLoader extends AbstractLoader<string> {
-  protected async fetchResource(src: string): Promise<string> {
-    const response = await fetch(src);
-    return await response.text();
-  }
+* `Load<T>(id: string, promise: Promise<T>): string`
+* `LoadTexture(src: string, type?: ContentLoadType): string`
+* `LoadAudio(src: string, type?: ContentLoadType): string`
+* `LoadJson<T>(src: string, type?: ContentLoadType): string`
+* `GetProgress(): { loaded, failed, total }`
+* `GetResult<T>(id: string): T | undefined`
+* `GetResource(id: string): AbstractResource<any> | undefined`
+* `GetError(id: string): any`
+* `GetAllResources(): AbstractResource<any>[]`
+* `GetLoadedResources(): AbstractResource<any>[]`
+* `IsReady(): boolean`
+* `Clear(): void`
 
-  public LoadText(src: string) {
-    const { id, promise } = this.Load(src);
-    return [id, promise.then(text => new TextResource(id, src, text))];
-  }
-}
-```
+### **Loaders**
+
+* `TextureLoader.LoadTexture(src, type)`
+* `AudioLoader.LoadAudio(src, type)`
+* `JsonLoader.LoadJson(src, type)`
+
+### **Enums**
+
+* `ContentLoadType.Cache` → always weak-cache
+* `ContentLoadType.Default` → adaptive caching strategy
 
 ---
 
-## ⚠️ Notes & Caveats
+## ⚠️ Caveats
 
-* `WeakRef` is used for caching. Assets may be garbage-collected if not strongly referenced elsewhere.
-* `AudioLoader` uses a **shared AudioContext**. Ensure it’s resumed on user interaction if needed.
-* `Clear()` removes tasks but does not cancel ongoing requests.
+* **Audio**: some browsers require a user interaction before audio can be decoded (`AudioContext` restriction).
+* **GetAllResources**: may include `undefined` for failed loads.
+* **Caching**: resources are cached based on `src` hash; different query strings may be treated as unique.
 
 ---
 
-## 📄 License
+## 🔧 Extending
+
+To support a new resource type:
+
+1. Create a subclass of `AbstractLoader<TResource>`.
+2. Implement `fetchResource(src: string): Promise<TResource>`.
+3. Wrap the result into a custom `Resource` class.
+4. Add a `Load<Type>` convenience method.
+
+---
+
+## 📜 License
 
 MIT © Johannes Ludescher
