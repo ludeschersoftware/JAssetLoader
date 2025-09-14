@@ -1,9 +1,20 @@
 import AbstractLoader from "../Abstracts/AbstractLoader";
-import ContentLoadType from "../Enums/ContentLoadType";
+import WrappedPromiseInterface from "../Interfaces/WrappedPromiseInterface";
 import TextureResource from "../Resources/TextureResource";
-import LoaderLoadResultType from "../Types/LoaderLoadResultType";
 
 class TextureLoader extends AbstractLoader<ImageBitmap> {
+    public LoadTexture(src: string, cache?: boolean): WrappedPromiseInterface<TextureResource> {
+        const { id, promise } = this.Load(src, cache);
+        const WRAPPED_PROMISE: Promise<TextureResource> = promise.then(bitmap => {
+            return new TextureResource(id, src, bitmap);
+        });
+
+        return {
+            id,
+            promise: WRAPPED_PROMISE,
+        };
+    }
+
     protected async fetchResource(src: string): Promise<ImageBitmap> {
         return new Promise((resolve, reject) => {
             const IMG: HTMLImageElement = new Image();
@@ -11,15 +22,6 @@ class TextureLoader extends AbstractLoader<ImageBitmap> {
             IMG.onerror = reject;
             IMG.src = src;
         });
-    }
-
-    public LoadTexture(src: string, type?: ContentLoadType): LoaderLoadResultType<TextureResource> {
-        const { id, promise } = this.Load(src, type);
-        const WRAPPED_PROMISE: Promise<TextureResource> = promise.then(bitmap => {
-            return new TextureResource(id, src, bitmap);
-        });
-
-        return [id, WRAPPED_PROMISE];
     }
 }
 

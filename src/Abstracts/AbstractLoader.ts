@@ -1,7 +1,6 @@
 import Ref from "@ludeschersoftware/ref";
 import { CreateUniqHash, HashValue } from "@ludeschersoftware/utils";
-import ContentLoadType from "../Enums/ContentLoadType";
-import LoaderLoadResultInterface from "../Interfaces/LoaderLoadResultInterface";
+import WrappedPromiseInterface from "../Interfaces/WrappedPromiseInterface";
 import { retry } from "../Utils/RetryHelper";
 
 abstract class AbstractLoader<T extends object> {
@@ -15,16 +14,16 @@ abstract class AbstractLoader<T extends object> {
         this.m_load_counts = new Map();
     }
 
-    public Load(src: string, type?: ContentLoadType): LoaderLoadResultInterface<T> {
+    public Load(src: string, cache?: boolean): WrappedPromiseInterface<T> {
         return {
             id: CreateUniqHash(50),
-            promise: this.loadInternal(src, type),
+            promise: this.loadInternal(src, cache),
         };
     }
 
     protected abstract fetchResource(src: string): Promise<T>;
 
-    private async loadInternal(src: string, type?: ContentLoadType): Promise<T> {
+    private async loadInternal(src: string, cache?: boolean): Promise<T> {
         const SRC_HASH: number = HashValue(src);
 
         // Strong cache first
@@ -45,13 +44,9 @@ abstract class AbstractLoader<T extends object> {
         }
 
         // Fetch with retry & exponential backoff
-        const RESOURCE: T = await retry(
-            () => this.fetchResource(src),
-            3,   // max retries
-            300  // base delay
-        );
+        const RESOURCE: T = await retry(() => this.fetchResource(src), 3, 300);
 
-        if (type === ContentLoadType.Cache) {
+        if (cache === true) {
             this.m_cache.set(SRC_HASH, new WeakRef(RESOURCE));
 
             return RESOURCE;

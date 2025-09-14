@@ -1,13 +1,26 @@
 import AbstractLoader from "../Abstracts/AbstractLoader";
-import ContentLoadType from "../Enums/ContentLoadType";
+import WrappedPromiseInterface from "../Interfaces/WrappedPromiseInterface";
 import AudioResource from "../Resources/AudioResource";
-import LoaderLoadResultType from "../Types/LoaderLoadResultType";
 
 class AudioLoader extends AbstractLoader<AudioBuffer> {
     private static context: AudioContext | null = null;
     private static initialized = false;
 
-    /** Lazily create AudioContext */
+    public LoadAudio(src: string, cache?: boolean): WrappedPromiseInterface<AudioResource> {
+        const { id, promise } = this.Load(src, cache);
+        const WRAPPED_PROMISE: Promise<AudioResource> = promise.then(buffer => {
+            return new AudioResource(id, src, buffer);
+        });
+
+        return {
+            id,
+            promise: WRAPPED_PROMISE,
+        };
+    }
+
+    /**
+     * Lazily create AudioContext
+     */
     private static getContext(): AudioContext {
         if (!this.context) {
             this.context = new AudioContext();
@@ -16,12 +29,17 @@ class AudioLoader extends AbstractLoader<AudioBuffer> {
         return this.context;
     }
 
-    /** Attach global listeners to auto-resume context on first user gesture */
-    private static autoResume(ctx: AudioContext) {
-        if (this.initialized) return;
+    /**
+     * Attach global listeners to auto-resume context on first user gesture
+     */
+    private static autoResume(ctx: AudioContext): void {
+        if (this.initialized) {
+            return;
+        }
+
         this.initialized = true;
 
-        const resume = async () => {
+        const RESUME = async () => {
             if (ctx.state === "suspended") {
                 try {
                     await ctx.resume();
@@ -29,14 +47,15 @@ class AudioLoader extends AbstractLoader<AudioBuffer> {
                     console.warn("AudioContext resume failed:", err);
                 }
             }
-            window.removeEventListener("click", resume);
-            window.removeEventListener("keydown", resume);
-            window.removeEventListener("touchstart", resume);
+
+            window.removeEventListener("click", RESUME);
+            window.removeEventListener("keydown", RESUME);
+            window.removeEventListener("touchstart", RESUME);
         };
 
-        window.addEventListener("click", resume);
-        window.addEventListener("keydown", resume);
-        window.addEventListener("touchstart", resume);
+        window.addEventListener("click", RESUME);
+        window.addEventListener("keydown", RESUME);
+        window.addEventListener("touchstart", RESUME);
     }
 
     protected async fetchResource(src: string): Promise<AudioBuffer> {
@@ -44,15 +63,6 @@ class AudioLoader extends AbstractLoader<AudioBuffer> {
         const ARRAY_BUFFER: ArrayBuffer = await RESPONSE.arrayBuffer();
 
         return await AudioLoader.getContext().decodeAudioData(ARRAY_BUFFER);
-    }
-
-    public LoadAudio(src: string, type?: ContentLoadType): LoaderLoadResultType<AudioResource> {
-        const { id, promise } = this.Load(src, type);
-        const WRAPPED_PROMISE: Promise<AudioResource> = promise.then(buffer => {
-            return new AudioResource(id, src, buffer);
-        });
-
-        return [id, WRAPPED_PROMISE];
     }
 }
 
