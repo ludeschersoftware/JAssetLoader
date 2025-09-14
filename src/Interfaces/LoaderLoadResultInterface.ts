@@ -1,6 +1,6 @@
-interface LoaderLoadResultInterface<TResource> {
+interface LoaderLoadResultInterface<T> {
     id: string;
-    promise: Promise<TResource>;
+    promise: Promise<T>;
 }
 
 export default LoaderLoadResultInterface;

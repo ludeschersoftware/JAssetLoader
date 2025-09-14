@@ -2,12 +2,11 @@ import Ref from "@ludeschersoftware/ref";
 import { CreateUniqHash, HashValue } from "@ludeschersoftware/utils";
 import ContentLoadType from "../Enums/ContentLoadType";
 import LoaderLoadResultInterface from "../Interfaces/LoaderLoadResultInterface";
-import AbstractResource from "./AbstractResource";
 import { retry } from "../Utils/RetryHelper";
 
-abstract class AbstractLoader<TResource extends AbstractResource<any>> {
-    private readonly m_cache: Map<number, WeakRef<TResource>>;
-    private readonly m_strong_cache: Map<number, TResource>;
+abstract class AbstractLoader<T extends object> {
+    private readonly m_cache: Map<number, WeakRef<T>>;
+    private readonly m_strong_cache: Map<number, T>;
     private readonly m_load_counts: Map<number, Ref<number>>;
 
     public constructor() {
@@ -16,28 +15,28 @@ abstract class AbstractLoader<TResource extends AbstractResource<any>> {
         this.m_load_counts = new Map();
     }
 
-    public Load(src: string, type?: ContentLoadType): LoaderLoadResultInterface<TResource> {
+    public Load(src: string, type?: ContentLoadType): LoaderLoadResultInterface<T> {
         return {
             id: CreateUniqHash(50),
             promise: this.loadInternal(src, type),
         };
     }
 
-    protected abstract fetchResource(src: string): Promise<TResource>;
+    protected abstract fetchResource(src: string): Promise<T>;
 
-    private async loadInternal(src: string, type?: ContentLoadType): Promise<TResource> {
+    private async loadInternal(src: string, type?: ContentLoadType): Promise<T> {
         const SRC_HASH: number = HashValue(src);
 
         // Strong cache first
-        const STRONG_CACHE_HIT: TResource | undefined = this.m_strong_cache.get(SRC_HASH);
+        const STRONG_CACHE_HIT: T | undefined = this.m_strong_cache.get(SRC_HASH);
 
         if (STRONG_CACHE_HIT) {
             return STRONG_CACHE_HIT;
         }
 
         // Weak cache next
-        const CACHE_HIT: WeakRef<TResource> | undefined = this.m_cache.get(SRC_HASH);
-        const CACHED: TResource | undefined = CACHE_HIT?.deref();
+        const CACHE_HIT: WeakRef<T> | undefined = this.m_cache.get(SRC_HASH);
+        const CACHED: T | undefined = CACHE_HIT?.deref();
 
         if (CACHED) {
             return CACHED;
@@ -46,7 +45,7 @@ abstract class AbstractLoader<TResource extends AbstractResource<any>> {
         }
 
         // Fetch with retry & exponential backoff
-        const RESOURCE: TResource = await retry(
+        const RESOURCE: T = await retry(
             () => this.fetchResource(src),
             3,   // max retries
             300  // base delay
